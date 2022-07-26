@@ -1,0 +1,64 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "packages/custom-rotors",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/js:tsc",
+      "options": {
+        "outputPath": "dist/packages/custom-rotors",
+        "tsConfig": "packages/custom-rotors/tsconfig.json",
+        "packageJson": "packages/custom-rotors/package.json",
+        "main": "packages/custom-rotors/index.d.ts",
+        "assets": [
+          "packages/custom-rotors/*.md",
+          "packages/custom-rotors/index.d.ts",
+          "LICENSE",
+          {
+            "glob": "**/*",
+            "input": "packages/custom-rotors/platforms/",
+            "output": "./platforms/"
+          }
+        ],
+        "dependsOn": [
+          {
+            "target": "build.all",
+            "projects": "dependencies"
+          }
+        ]
+      }
+    },
+    "build.all": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": ["node tools/scripts/build-finish.ts custom-rotors"],
+        "parallel": false
+      },
+      "outputs": ["dist/packages/custom-rotors"],
+      "dependsOn": [
+        {
+          "target": "build.all",
+          "projects": "dependencies"
+        },
+        {
+          "target": "build",
+          "projects": "self"
+        }
+      ]
+    },
+    "focus": {
+      "executor": "@nrwl/workspace:run-commands",
+      "options": {
+        "commands": ["nx g @nativescript/plugin-tools:focus-packages custom-rotors"],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "options": {
+        "lintFilePatterns": ["packages/custom-rotors/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

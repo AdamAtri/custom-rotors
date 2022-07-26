@@ -24,7 +24,7 @@ npm run setup
 npm start
 ```
 
-- @nativescript
+- [@nativescript/custom-rotors](packages/custom-rotors/README.md)
 
 # How to use?
 
