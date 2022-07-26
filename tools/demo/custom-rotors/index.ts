@@ -1,8 +1,8 @@
 import { DemoSharedBase } from '../utils';
-import {} from '@nativescript/custom-rotors';
+import { EventData } from '@nativescript/core';
 
 export class DemoSharedCustomRotors extends DemoSharedBase {
-  testIt() {
-    console.log('test custom-rotors!');
+  testIt(e: EventData) {
+    console.log((<any>e.object).text);
   }
 }

@@ -1,14 +1,24 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" >
     <Page.actionBar>
-        <ActionBar title="custom-rotors" icon="" class="action-bar">
+        <ActionBar title="nativescript-custom-rotors" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
-    <StackLayout class="p-20">
+    <StackLayout class="p-20" rotorContainer="true">
         <ScrollView class="h-full">
           <StackLayout>
-            <Button text="Test custom-rotors" tap="{{ testIt }}" class="btn btn-primary"/>
-
+            <Button text="Group1 Button1" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group1"/>
+            <Button text="Group1 Button2" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group1"/>
+            <Button text="Group2 Button1" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group2"/>
+            <Button text="Group2 Button2" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group2"/>
+            <Button text="Not Part of Rotor group" tap="{{ testIt }}" class="btn btn-primary" />
+            <StackLayout >
+              <Button text="Group1 Button3" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group1"/>
+              <Button text="Group2 Button2" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group2"/>
+              <Button text="Not Part of Rotor group" tap="{{ testIt }}" class="btn btn-primary" />
+              <Image src="https://i2-prod.dailystar.co.uk/incoming/article26943107.ece/ALTERNATES/s615b/1_PAY-I-love-my-30HH-breasts-but-they-put-me-in-DANGER-says-model-who-wants-reduction-despite-raking-in.jpg" />
+            </StackLayout>
           </StackLayout>
         </ScrollView>
+
     </StackLayout>
 </Page>
