@@ -4,6 +4,8 @@ export class CustomRotorsCommon extends Observable {}
 
 import { ContentView, isIOS, LayoutBase, Property, View, ViewBase } from '@nativescript/core';
 
+export type RotorContainerView = ContentView | LayoutBase;
+
 /**
  * @override
  * Add `rotorGroup` property to ViewBase.
@@ -15,20 +17,33 @@ export const rotorGroupProperty = new Property<ViewBase, string>({
   defaultValue: undefined,
 });
 rotorGroupProperty.register(ViewBase);
+export const rotorOrderProperty = new Property<ViewBase, number>({
+  name: 'rotorOrder',
+  defaultValue: -1,
+});
+rotorOrderProperty.register(ViewBase);
 
 /**
  * @override
  * Add `rotorContainer` property to ContentView
  * Mark any ContentView, specifically Page, as a "rotorContainer"
  */
-export const rotorContainerProperty = new Property<LayoutBase, boolean>({
+export const lb_rotorContainerProperty = new Property<LayoutBase, boolean>({
   name: 'rotorContainer',
   defaultValue: false,
   valueConverter: (value: string): boolean => {
     return value?.toLowerCase() === 'true';
   },
 });
-rotorContainerProperty.register(LayoutBase);
+lb_rotorContainerProperty.register(LayoutBase);
+export const cv_rotorContainerProperty = new Property<ContentView, boolean>({
+  name: 'rotorContainer',
+  defaultValue: false,
+  valueConverter: (value: string): boolean => {
+    return value?.toLowerCase() === 'true';
+  },
+});
+cv_rotorContainerProperty.register(ContentView);
 
 /**
  * @function initializeCustomRotors
@@ -39,6 +54,12 @@ export function initializeCustomRotors(): void {
   // define 'rotorGroup' on ViewBase
   Object.defineProperty(ViewBase.prototype, 'rotorGroup', {
     value: undefined,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  });
+  Object.defineProperty(ViewBase.prototype, 'rotorOrder', {
+    value: -1,
     enumerable: true,
     configurable: true,
     writable: true,
@@ -57,27 +78,47 @@ export function initializeCustomRotors(): void {
     configurable: true,
     writable: true,
   });
+  Object.defineProperty(ContentView.prototype, 'rotorContainer', {
+    value: false,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  });
 
   /**
    * @override
    * Override the "onLoaded" function of LayoutBase to create the custom rotor actions
    */
+  function setup(container: RotorContainerView) {
+    setTimeout(() => {
+      console.log(container.constructor.name, container.rotorContainer);
+      if (!isIOS || !container.rotorContainer) return;
+      setupRotorGroups(container);
+      const nativeContent = container.nativeViewProtected as UIView;
+      nativeContent.isAccessibilityElement = false;
+      setTimeout(() => {
+        UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nativeContent);
+      });
+    });
+  }
   (function () {
     const _onLoaded = LayoutBase.prototype.onLoaded;
     Object.defineProperty(LayoutBase.prototype, 'onLoaded', {
       value: function onLoaded(): void {
         _onLoaded.call(this);
-        console.log(this.constructor.name, this.rotorContainer);
-        if (!isIOS || !this.rotorContainer) return;
-        setupRotorGroups(this);
-        const nativeContent = this.nativeViewProtected as UIView;
-        nativeContent.isAccessibilityElement = false;
-        setTimeout(() => {
-          UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification, nativeContent);
-        });
+        setup(this);
       },
     });
-    console.log('finished initializing custom rotors');
+  })();
+  (function () {
+    const _onLoaded = ContentView.prototype.onLoaded;
+    Object.defineProperty(ContentView.prototype, 'onLoaded', {
+      value: function onLoaded(): void {
+        console.log('on cv loaded');
+        _onLoaded.call(this);
+        setup(this);
+      },
+    });
   })();
 }
 
@@ -85,10 +126,11 @@ export function initializeCustomRotors(): void {
  * @function setupRotorGroups
  * Creates rotor groups for descrete navigation
  */
-function setupRotorGroups(container: LayoutBase): void {
+function setupRotorGroups(container: RotorContainerView): void {
   const rotorGroups = {};
   recurseChildrenForRotorGroups(container, rotorGroups);
   recurseParentsForPrevious(container, rotorGroups);
+  sortRotorGroups(rotorGroups);
   console.log(Object.keys(rotorGroups));
 
   const rotors: NSMutableArray<UIAccessibilityCustomRotor> = NSMutableArray.new();
@@ -99,10 +141,9 @@ function setupRotorGroups(container: LayoutBase): void {
       const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
       const currentView = predicate.currentItem.targetElement as UIView;
       const currentIndex = rotorItems.indexOf(currentView);
-      const nextIndex = currentIndex >= 0 ? currentIndex + (forward ? 1 : -1) : 0;
+      let nextIndex = forward ? currentIndex + 1 : currentIndex - 1;
       let target;
-
-      if (nextIndex >= rotorItems.length) target = null;
+      if (nextIndex >= rotorItems.length || nextIndex < 0) target = null;
       else target = rotorItems[nextIndex];
 
       return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(target, null);
@@ -119,12 +160,17 @@ function setupRotorGroups(container: LayoutBase): void {
  * recursive function to find all children in a ContentView that belong to a rotorGroup
  */
 function recurseChildrenForRotorGroups(vb: ViewBase, rotorGroups: any): boolean {
-  if (vb.rotorGroup) {
-    if (!rotorGroups[vb.rotorGroup]) rotorGroups[vb.rotorGroup] = [];
+  if (vb?.rotorGroup) {
+    console.log('add to rotorGroup', vb.constructor.name, vb.rotorGroup);
+    if (rotorGroups[vb.rotorGroup] == undefined) rotorGroups[vb.rotorGroup] = [];
     rotorGroups[vb.rotorGroup].push(vb);
   }
-  if (vb instanceof LayoutBase || vb instanceof ContentView) vb.eachChild((child) => recurseChildrenForRotorGroups(child, rotorGroups));
-  else if (!vb.rotorGroup) {
+  if (vb instanceof LayoutBase) vb.eachChild((child) => recurseChildrenForRotorGroups(child, rotorGroups));
+  else if (vb instanceof ContentView) {
+    recurseChildrenForRotorGroups(vb.content, rotorGroups);
+  }
+  // todo: is having a default group a good idea
+  else if (!vb?.rotorGroup) {
     if (!rotorGroups['main']) rotorGroups['main'] = [];
     rotorGroups['main'].push(vb);
   }
@@ -140,4 +186,17 @@ function recurseParentsForPrevious(vb: ViewBase, rotorGroups: any): boolean {
     parent = parent.parent;
   }
   return false;
+}
+/***
+ * @function sortRotorGroups
+ */
+function sortRotorGroups(rotorGroups: any): void {
+  Object.keys(rotorGroups).forEach((key) => {
+    const group = rotorGroups[key] as Array<ViewBase>;
+    group.sort((v1, v2) => {
+      if (v1.rotorOrder > v2.rotorOrder) return 1;
+      if (v1.rotorOrder < v2.rotorOrder) return -1;
+      return 0;
+    });
+  });
 }
