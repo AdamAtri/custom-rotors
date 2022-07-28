@@ -125,7 +125,7 @@ export function initializeCustomRotors(): void {
       value: function onLoaded(): void {
         _onLoaded.call(this);
         setTimeout(() => {
-          console.log(this.constructor.name, this.rotorContainer);
+          // console.log(this.constructor.name, this.rotorContainer);
           if (!isIOS || !this.rotorContainer) return;
           setupRotorGroups(this);
           const nativeContent = this.nativeViewProtected as UIView;
@@ -156,7 +156,7 @@ function setupRotorGroups(container: RotorContainerView): void {
   const rotors: NSMutableArray<UIAccessibilityCustomRotor> = NSMutableArray.new();
   Object.keys(rotorGroups).forEach((key) => {
     const rotor = UIAccessibilityCustomRotor.alloc().initWithNameItemSearchBlock(key, (predicate: UIAccessibilityCustomRotorSearchPredicate): UIAccessibilityCustomRotorItemResult => {
-      const rotorItems = (<Array<ViewBase>>container.rotorGroups[key]).map((item) => item.nativeViewProtected);
+      const rotorItems = (<Array<View>>container.rotorGroups[key]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
       if (rotorItems.length <= 0) return null;
       const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
       const currentView = predicate.currentItem.targetElement as UIView;
@@ -177,18 +177,13 @@ function setupRotorGroups(container: RotorContainerView): void {
  */
 function recurseChildrenForRotorGroups(vb: ViewBase, rotorGroups: any): boolean {
   if (vb?.rotorGroup) {
-    console.log('add to rotorGroup', vb.constructor.name, vb.rotorGroup);
+    // console.log('add to rotorGroup', vb.constructor.name, vb.rotorGroup);
     if (rotorGroups[vb.rotorGroup] == undefined) rotorGroups[vb.rotorGroup] = [];
     rotorGroups[vb.rotorGroup].push(vb);
   }
   if (vb instanceof LayoutBase) vb.eachChild((child) => recurseChildrenForRotorGroups(child, rotorGroups));
   else if (vb instanceof ContentView) {
     recurseChildrenForRotorGroups(vb.content, rotorGroups);
-  }
-  // todo: is having a default group a good idea
-  else if (!vb?.rotorGroup) {
-    if (!rotorGroups['main']) rotorGroups['main'] = [];
-    rotorGroups['main'].push(vb);
   }
   return true;
 }
