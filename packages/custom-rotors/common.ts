@@ -22,6 +22,7 @@ rotorGroupProperty.register(ViewBase);
 export const rotorOrderProperty = new Property<ViewBase, number>({
   name: 'rotorOrder',
   defaultValue: -1,
+  valueConverter: (value: string): number => +value,
 });
 rotorOrderProperty.register(ViewBase);
 
@@ -88,6 +89,27 @@ export function initializeCustomRotors(): void {
     else group.splice(index, 0, item);
     return true;
   }
+  function addRotorGroup(name: string, items?: Array<ViewBase>): void {
+    if (!this.rotorGroups) this.rotorGroups = {};
+    this.rotorGroups[name] = this.rotorGroups[name]?.concat(items) || items || [];
+    const iosView = this.nativeViewProtected as UIView;
+    const rotors: NSMutableArray<UIAccessibilityCustomRotor> = <NSMutableArray<UIAccessibilityCustomRotor>>iosView.accessibilityCustomRotors || NSMutableArray.new();
+    const rotor = UIAccessibilityCustomRotor.alloc().initWithNameItemSearchBlock(name, (predicate: UIAccessibilityCustomRotorSearchPredicate): UIAccessibilityCustomRotorItemResult => {
+      const rotorItems = (<Array<View>>this.rotorGroups[name]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
+      if (rotorItems.length <= 0) return null;
+      const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
+      const currentView = predicate.currentItem.targetElement as UIView;
+      const currentIndex = rotorItems.indexOf(currentView);
+      let nextIndex = forward ? currentIndex + 1 : currentIndex - 1;
+      let target;
+      if (nextIndex > rotorItems.length || nextIndex < 0) target = null;
+      else target = rotorItems[nextIndex];
+      return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(target, null);
+    });
+    rotors.addObject(rotor);
+    iosView.accessibilityCustomRotors = rotors;
+  }
+
   const containerName = 'rotorContainer';
   const containerProp = {
     value: false,
@@ -104,16 +126,19 @@ export function initializeCustomRotors(): void {
   };
   const removeFun = 'removeRotorItem';
   const insertFun = 'insertRotorItem';
+  const addFun = 'addRotorGroup';
 
   Object.defineProperty(LayoutBase.prototype, containerName, containerProp);
   Object.defineProperty(LayoutBase.prototype, groupsName, groupsProp);
   LayoutBase.prototype[removeFun] = removeRotorItem;
   LayoutBase.prototype[insertFun] = insertRotorItem;
+  LayoutBase.prototype[addFun] = addRotorGroup;
 
   Object.defineProperty(ContentView.prototype, containerName, containerProp);
   Object.defineProperty(ContentView.prototype, groupsName, groupsProp);
   ContentView.prototype[removeFun] = removeRotorItem;
   ContentView.prototype[insertFun] = insertRotorItem;
+  ContentView.prototype[addFun] = addRotorGroup;
 
   /**
    * @override
@@ -152,28 +177,13 @@ function setupRotorGroups(container: RotorContainerView): void {
   sortRotorGroups(rotorGroups);
   container.rotorGroups = rotorGroups;
   //console.log(Object.keys(rotorGroups));
-
-  const rotors: NSMutableArray<UIAccessibilityCustomRotor> = NSMutableArray.new();
   Object.keys(rotorGroups).forEach((key) => {
-    const rotor = UIAccessibilityCustomRotor.alloc().initWithNameItemSearchBlock(key, (predicate: UIAccessibilityCustomRotorSearchPredicate): UIAccessibilityCustomRotorItemResult => {
-      const rotorItems = (<Array<View>>container.rotorGroups[key]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
-      if (rotorItems.length <= 0) return null;
-      const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
-      const currentView = predicate.currentItem.targetElement as UIView;
-      const currentIndex = rotorItems.indexOf(currentView);
-      let nextIndex = forward ? currentIndex + 1 : currentIndex - 1;
-      let target;
-      if (nextIndex > rotorItems.length || nextIndex < 0) target = null;
-      else target = rotorItems[nextIndex];
-      return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(target, null);
-    });
-    rotors.addObject(rotor);
+    container.addRotorGroup(key, rotorGroups[key]);
   });
-  (<UIView>container.nativeViewProtected).accessibilityCustomRotors = rotors;
 }
 /**
  * @function recurseChildrenForRotorGroups
- * recursive function to find all children in a ContentView that belong to a rotorGroup
+ * recursive function to find all children in a RotorContainerView that belong to a rotorGroup
  */
 function recurseChildrenForRotorGroups(vb: ViewBase, rotorGroups: any): boolean {
   if (vb?.rotorGroup) {
@@ -190,7 +200,7 @@ function recurseChildrenForRotorGroups(vb: ViewBase, rotorGroups: any): boolean 
 function recurseParentsForPrevious(vb: ViewBase, rotorGroups: any): boolean {
   let parent = vb.parent;
   while (parent) {
-    if (parent instanceof LayoutBase && parent.rotorContainer) {
+    if ((parent instanceof LayoutBase || parent instanceof ContentView) && parent.rotorContainer) {
       rotorGroups['previous'] = [parent];
       return true;
     }
