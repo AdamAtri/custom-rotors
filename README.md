@@ -3,6 +3,7 @@
 # :rotating_light: Important - read first!
 
 **Use this template on GitHub:**
+
 1. Hit the "Use this template" button
 2. Follow GitHub instructions (set repo name, visibility, description) & clone your new repo
 3. Setup workspace: `npm run setup`
@@ -28,7 +29,7 @@ npm start
 
 # How to use?
 
-This workspace manages the suite of plugins listed above. 
+This workspace manages the suite of plugins listed above.
 
 In general, when in doubt with what to do, just `npm start`.
 
@@ -64,7 +65,7 @@ npm start
 - Choose the focus commands for the package you wish to focus on and hit enter.
 - All the demo app's will be updated to isolate that 1 package and for supported IDE's (currently VS Code), the source code will also become isolated in the workspace.
 
-Note: *good to always clean the demo you plan to run after focusing. (You can clean any demo from `npm start` as well)*
+Note: _good to always clean the demo you plan to run after focusing. (You can clean any demo from `npm start` as well)_
 
 ## How to publish packages?
 

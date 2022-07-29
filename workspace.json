@@ -1,8 +1,8 @@
 {
   "version": 2,
   "projects": {
+    "custom-rotors": "packages/custom-rotors",
     "demo": "apps/demo",
-    "demo-angular": "apps/demo-angular",
-    "custom-rotors": "packages/custom-rotors"
+    "demo-angular": "apps/demo-angular"
   }
 }
