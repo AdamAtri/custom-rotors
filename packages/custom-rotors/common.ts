@@ -3,11 +3,9 @@ import { Observable } from '@nativescript/core';
 export class CustomRotorsCommon extends Observable {}
 
 import { ContentView, isIOS, LayoutBase, Property, View, ViewBase } from '@nativescript/core';
+import { Class } from '.';
 
 export type RotorContainerView = ContentView | LayoutBase;
-
-type Class = new (...args: any[]) => {};
-type Callback = (...args: any[]) => void;
 
 /**
  * @override
@@ -123,6 +121,8 @@ export function initializeCustomRotors(): void {
       let newView;
       if (newIndex > rotorItems.length || newIndex < 0) newView = null;
       else newView = rotorItems[newIndex];
+      const callback = this.rotorGroupCallbacks.get(name);
+      if (!!callback) callback({ newView, newIndex, oldView, oldIndex });
       return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(newView, null);
     });
     rotors.addObject(rotor);
@@ -132,12 +132,6 @@ export function initializeCustomRotors(): void {
   const prototypeAsRotorContainer = (cls: Class) => {
     // wrap the container property
     const containerName = 'rotorContainer';
-    const containerProp = {
-      value: false,
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    };
     //@ts-ignore
     const containerProperty = new Property<cls, boolean>({
       name: containerName,
@@ -145,23 +139,28 @@ export function initializeCustomRotors(): void {
       valueConverter: (value: string): boolean => value?.toLowerCase() === 'true',
     });
     containerProperty.register(cls);
-    Object.defineProperty(cls.prototype, containerName, containerProp);
+    Object.defineProperty(cls.prototype, containerName, {
+      value: false,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
     // wrap the group property
     const groupsName = 'rotorGroups';
-    const groupsProp = {
+    Object.defineProperty(cls.prototype, groupsName, {
       value: undefined,
       enumerable: true,
       configurable: true,
       writable: true,
-    };
-    //@ts-ignore
-    const groupProperty = new Property<cls, boolean>({
-      name: groupsName,
-      defaultValue: false,
-      valueConverter: (value: string): boolean => value?.toLowerCase() === 'true',
     });
-    groupProperty.register(cls);
-    Object.defineProperty(cls.prototype, groupsName, groupsProp);
+    // wrap the groupCallbacks map
+    const groupCallbacks = 'rotorGroupCallbacks';
+    Object.defineProperty(cls.prototype, groupCallbacks, {
+      value: new Map(), // Map<string,Callback>
+      enumerable: true,
+      configurable: true,
+      writable: false,
+    });
 
     // set the common prototype functions
     cls.prototype['removeRotorItem'] = removeRotorItem;
