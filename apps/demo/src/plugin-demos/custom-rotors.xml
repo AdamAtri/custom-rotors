@@ -1,9 +1,9 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" >
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" rotorContainer="true" >
     <Page.actionBar>
         <ActionBar title="nativescript-custom-rotors" icon="" class="action-bar">
         </ActionBar>
     </Page.actionBar>
-    <StackLayout class="p-20" rotorContainer="true">
+    <StackLayout class="p-20">
         <ScrollView class="h-full">
           <StackLayout>
             <Button text="Group1 Button1" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group1"/>
@@ -15,7 +15,7 @@
               <Button text="Group1 Button3" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group1"/>
               <Button text="Group2 Button2" tap="{{ testIt }}" class="btn btn-primary" rotorGroup="group2"/>
               <Button text="Not Part of Rotor group" tap="{{ testIt }}" class="btn btn-primary" />
-              <Image src="https://i2-prod.dailystar.co.uk/incoming/article26943107.ece/ALTERNATES/s615b/1_PAY-I-love-my-30HH-breasts-but-they-put-me-in-DANGER-says-model-who-wants-reduction-despite-raking-in.jpg" />
+              <Image src="https://media-cldnry.s-nbcnews.com/image/upload/rockcms/2022-07/220712-webb-galaxies-bo-1116-e09be8.jpg" />
             </StackLayout>
           </StackLayout>
         </ScrollView>

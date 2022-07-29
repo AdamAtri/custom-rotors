@@ -1,2 +1,28 @@
 @import 'nativescript-theme-core/scss/light';
 @import 'nativescript-theme-core/scss/index';
+
+.group1 {
+  background-color: crimson;
+}
+.group2 {
+  background-color: grey;
+}
+
+.group3 {
+  background-color: teal;
+}
+
+.rating-item {
+  width: 20%;
+  height: 100%;
+
+  .rating-text {
+    color: white;
+    font-size: 22;
+    font-weight: bold;
+  }
+  .rating-desc {
+    color: navy;
+    font-size: 14;
+  }
+}

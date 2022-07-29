@@ -6,7 +6,8 @@
     <ScrollView class="h-full">
       <StackLayout>
         <Button text="add a package first" tap="{{ viewDemo }}" class="btn btn-primary view-demo"/>
-<Button text="custom-rotors" tap="{{ viewDemo }}" class="btn btn-primary view-demo"/>
+        <Button text="custom-rotors" tap="{{ viewDemo }}" class="btn btn-primary view-demo"/>
+        <Button text="advanced-custom-rotors" tap="{{ viewDemo }}" class="btn btn-primary view-demo"/>
       </StackLayout>
     </ScrollView>
   </StackLayout>

@@ -1,0 +1,37 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" rotorContainer="true">
+    <Page.actionBar>
+        <ActionBar title="advanced-custom-rotors" icon="" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout class="p-20">
+      <GridLayout rows='*, *, *' columns='*, *, *' class="h-full">
+        <Button text="Group1 Button1" tap="{{ testIt }}" class="btn btn-primary group1" rotorGroup="group1" row="0" col="0"/>
+        <Button text="Group2 Button3" tap="{{ testIt }}" class="btn btn-primary group2" rotorGroup="group2" rotorOrder="3" row="0" col="1"/>
+        <Button text="Group1 Button2" tap="{{ testIt }}" class="btn btn-primary group1" rotorGroup="group1" row="0" col="2"/>
+        <Button text="Group3 Button1" tap="{{ testIt }}" class="btn btn-primary group3" rotorGroup="group3" row="1" col="0"/>
+        <Button text="Group2 Button1" tap="{{ testIt }}" class="btn btn-primary group2" rotorGroup="group2" rotorOrder="1" row="2" col="0"/>
+        <Button text="Group3 Button2" tap="{{ testIt }}" class="btn btn-primary group3" rotorGroup="group3" row="1" col="2"/>
+        <Button text="Group2 Button2" tap="{{ testIt }}" class="btn btn-primary group2" rotorGroup="group2" rotorOrder="2" row="2" col="1"/>
+        <Button text="Group1 Button3" tap="{{ testIt }}" class="btn btn-primary group1" rotorGroup="group1" row="2" col="2"/>
+        <GridLayout id="rating-bar" rows="90, *" columns="*,*,*,*,*" accessible="true" rotorGroup="rating" row="1" col="1">
+          <GridLayout class='rating-item' row="1" col="0">
+            <Label class='rating-text' horizontalAlignment='center' verticalAlignment='middle' text="1" />
+          </GridLayout>
+          <GridLayout class='rating-item' row="1" col="1">
+            <Label class='rating-text' horizontalAlignment='center' verticalAlignment='middle' text="2" />
+          </GridLayout>
+          <GridLayout class='rating-item' row="1" col="2">
+            <Label class='rating-text' horizontalAlignment='center' verticalAlignment='middle' text="3" />
+          </GridLayout>
+          <GridLayout class='rating-item' row="1" col="3">
+            <Label class='rating-text' horizontalAlignment='center' verticalAlignment='middle' text="4" />
+          </GridLayout>
+          <GridLayout class='rating-item' row="1" col="4">
+            <Label class='rating-text' horizontalAlignment='center' verticalAlignment='middle' text="5" />
+          </GridLayout>
+          <Label class='rating-desc' color="blue" text="dial rotor to 'rating' then flick up and down to change the rating" row="0" col="0" colSpan="5" textWrap="true"/>
+        </GridLayout>
+      </GridLayout>
+
+    </StackLayout>
+</Page>
