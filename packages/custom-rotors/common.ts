@@ -109,25 +109,30 @@ export function initializeCustomRotors(): void {
   function addRotorGroup(name: string, items?: Array<ViewBase>): void {
     if (!this.rotorGroups) this.rotorGroups = {};
     this.rotorGroups[name] = this.rotorGroups[name]?.concat(items) || items || [];
+    this.rotorGroups[name].forEach((v) => v.once('unloaded', this.removeRotorItem.bind(this, v)));
     const iosView = this.nativeViewProtected as UIView;
     const rotors: NSMutableArray<UIAccessibilityCustomRotor> = <NSMutableArray<UIAccessibilityCustomRotor>>iosView.accessibilityCustomRotors || NSMutableArray.new();
     const rotor = UIAccessibilityCustomRotor.alloc().initWithNameItemSearchBlock(name, (predicate: UIAccessibilityCustomRotorSearchPredicate): UIAccessibilityCustomRotorItemResult => {
       const callback = this.rotorGroupCallbacks.get(name);
-      const rotorItems = (<Array<View>>this.rotorGroups[name]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
+      const rotorItems = (<Array<View>>this.rotorGroups[name])
+        .filter((item: View) => item.visibility === 'visible')
+        .filter((item: View) => item.isEnabled)
+        .map((item) => item.nativeViewProtected);
       const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
-      let oldView: UIView = null;
+      let target: UIView;
       let oldIndex: number = -1;
       let newIndex: number = -1;
-      let newView: UIView = null;
+      let newView: View = null;
       if (rotorItems.length > 0) {
-        oldView = predicate.currentItem.targetElement as UIView;
-        oldIndex = rotorItems.indexOf(oldView);
+        const iosOldView = predicate.currentItem.targetElement as UIView;
+        oldIndex = rotorItems.indexOf(iosOldView);
         newIndex = forward ? oldIndex + 1 : oldIndex - 1;
-        if (newIndex > rotorItems.length || newIndex < 0) newView = null;
-        else newView = rotorItems[newIndex];
+        if (newIndex > rotorItems.length || newIndex < 0) target = null;
+        else target = rotorItems[newIndex];
+        newView = target ? (<Array<View>>this.rotorGroups[name]).find((v) => v.nativeViewProtected === target) : null;
       }
-      if (!!callback) callback({ newView, newIndex, oldView, oldIndex, forward });
-      return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(newView, null);
+      if (!!callback) callback({ newView, newIndex, oldIndex, forward });
+      return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(target, null);
     });
     rotors.addObject(rotor);
     iosView.accessibilityCustomRotors = rotors;
