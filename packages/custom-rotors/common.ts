@@ -112,17 +112,21 @@ export function initializeCustomRotors(): void {
     const iosView = this.nativeViewProtected as UIView;
     const rotors: NSMutableArray<UIAccessibilityCustomRotor> = <NSMutableArray<UIAccessibilityCustomRotor>>iosView.accessibilityCustomRotors || NSMutableArray.new();
     const rotor = UIAccessibilityCustomRotor.alloc().initWithNameItemSearchBlock(name, (predicate: UIAccessibilityCustomRotorSearchPredicate): UIAccessibilityCustomRotorItemResult => {
-      const rotorItems = (<Array<View>>this.rotorGroups[name]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
-      if (rotorItems.length <= 0) return null;
-      const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
-      const oldView = predicate.currentItem.targetElement as UIView;
-      const oldIndex = rotorItems.indexOf(oldView);
-      let newIndex = forward ? oldIndex + 1 : oldIndex - 1;
-      let newView;
-      if (newIndex > rotorItems.length || newIndex < 0) newView = null;
-      else newView = rotorItems[newIndex];
       const callback = this.rotorGroupCallbacks.get(name);
-      if (!!callback) callback({ newView, newIndex, oldView, oldIndex });
+      const rotorItems = (<Array<View>>this.rotorGroups[name]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
+      const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
+      let oldView: UIView = null;
+      let oldIndex: number = -1;
+      let newIndex: number = -1;
+      let newView: UIView = null;
+      if (rotorItems.length > 0) {
+        oldView = predicate.currentItem.targetElement as UIView;
+        oldIndex = rotorItems.indexOf(oldView);
+        newIndex = forward ? oldIndex + 1 : oldIndex - 1;
+        if (newIndex > rotorItems.length || newIndex < 0) newView = null;
+        else newView = rotorItems[newIndex];
+      }
+      if (!!callback) callback({ newView, newIndex, oldView, oldIndex, forward });
       return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(newView, null);
     });
     rotors.addObject(rotor);
