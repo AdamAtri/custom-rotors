@@ -7,6 +7,7 @@ import { ContentView, isIOS, LayoutBase, Property, View, ViewBase } from '@nativ
 export type RotorContainerView = ContentView | LayoutBase;
 
 type Class = new (...args: any[]) => {};
+type Callback = (...args: any[]) => void;
 
 /**
  * @override
@@ -74,7 +75,12 @@ export function initializeCustomRotors(): void {
     iosView.setValueForKey(value, 'rotorGroup');
   };
 
-  // define 'rotorContainer' on LayoutBase
+  /**
+   * @function removeRotorItem
+   * common remove function for RotorContainerView
+   * @param item ViewBase - the item to remove
+   * @returns true if the item is removed
+   */
   function removeRotorItem(item: ViewBase): boolean {
     if (!this.rotorGroups || !this.rotorGroups[item.rotorGroup]) return false;
     const group = this.rotorGroups[item.rotorGroup] as Array<ViewBase>;
@@ -82,6 +88,13 @@ export function initializeCustomRotors(): void {
     group.splice(group.indexOf(item), 1);
     return true;
   }
+  /**
+   * @function insertRotorItem
+   * common insert function for RotorContainerView
+   * @param item ViewBase - the item to insert into a rotorGroup
+   * @param index number - (Optional) index for insertion
+   * @returns true if item is inserted
+   */
   function insertRotorItem(item: ViewBase, index: number = 0): boolean {
     if (!this.rotorGroups || !this.rotorGroups[item.rotorGroup]) return false;
     const group = this.rotorGroups[item.rotorGroup] as Array<ViewBase>;
@@ -89,6 +102,12 @@ export function initializeCustomRotors(): void {
     else group.splice(index, 0, item);
     return true;
   }
+  /**
+   * @function addRotorGroup
+   * common function for RotorContainerView to add a new rotor group
+   * @param name string - a name for the group. this is what VoiceOver will read.
+   * @param items Array<ViewBase> - (Optional) items to include
+   */
   function addRotorGroup(name: string, items?: Array<ViewBase>): void {
     if (!this.rotorGroups) this.rotorGroups = {};
     this.rotorGroups[name] = this.rotorGroups[name]?.concat(items) || items || [];
@@ -98,53 +117,58 @@ export function initializeCustomRotors(): void {
       const rotorItems = (<Array<View>>this.rotorGroups[name]).filter((item: View) => item.visibility === 'visible').map((item) => item.nativeViewProtected);
       if (rotorItems.length <= 0) return null;
       const forward = predicate.searchDirection == UIAccessibilityCustomRotorDirection.Next;
-      const currentView = predicate.currentItem.targetElement as UIView;
-      const currentIndex = rotorItems.indexOf(currentView);
-      let nextIndex = forward ? currentIndex + 1 : currentIndex - 1;
-      let target;
-      if (nextIndex > rotorItems.length || nextIndex < 0) target = null;
-      else target = rotorItems[nextIndex];
-      return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(target, null);
+      const oldView = predicate.currentItem.targetElement as UIView;
+      const oldIndex = rotorItems.indexOf(oldView);
+      let newIndex = forward ? oldIndex + 1 : oldIndex - 1;
+      let newView;
+      if (newIndex > rotorItems.length || newIndex < 0) newView = null;
+      else newView = rotorItems[newIndex];
+      return UIAccessibilityCustomRotorItemResult.alloc().initWithTargetElementTargetRange(newView, null);
     });
     rotors.addObject(rotor);
     iosView.accessibilityCustomRotors = rotors;
   }
 
-  const containerName = 'rotorContainer';
-  const containerProp = {
-    value: false,
-    enumerable: true,
-    configurable: true,
-    writable: true,
-  };
-  const groupsName = 'rotorGroups';
-  const groupsProp = {
-    value: undefined,
-    enumerable: true,
-    configurable: true,
-    writable: true,
-  };
-  const removeFun = 'removeRotorItem';
-  const insertFun = 'insertRotorItem';
-  const addFun = 'addRotorGroup';
+  const prototypeAsRotorContainer = (cls: Class) => {
+    // wrap the container property
+    const containerName = 'rotorContainer';
+    const containerProp = {
+      value: false,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    };
+    //@ts-ignore
+    const containerProperty = new Property<cls, boolean>({
+      name: containerName,
+      defaultValue: false,
+      valueConverter: (value: string): boolean => value?.toLowerCase() === 'true',
+    });
+    containerProperty.register(cls);
+    Object.defineProperty(cls.prototype, containerName, containerProp);
+    // wrap the group property
+    const groupsName = 'rotorGroups';
+    const groupsProp = {
+      value: undefined,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    };
+    //@ts-ignore
+    const groupProperty = new Property<cls, boolean>({
+      name: groupsName,
+      defaultValue: false,
+      valueConverter: (value: string): boolean => value?.toLowerCase() === 'true',
+    });
+    groupProperty.register(cls);
+    Object.defineProperty(cls.prototype, groupsName, groupsProp);
 
-  Object.defineProperty(LayoutBase.prototype, containerName, containerProp);
-  Object.defineProperty(LayoutBase.prototype, groupsName, groupsProp);
-  LayoutBase.prototype[removeFun] = removeRotorItem;
-  LayoutBase.prototype[insertFun] = insertRotorItem;
-  LayoutBase.prototype[addFun] = addRotorGroup;
+    // set the common prototype functions
+    cls.prototype['removeRotorItem'] = removeRotorItem;
+    cls.prototype['insertRotorItem'] = insertRotorItem;
+    cls.prototype['addRotorGroup'] = addRotorGroup;
 
-  Object.defineProperty(ContentView.prototype, containerName, containerProp);
-  Object.defineProperty(ContentView.prototype, groupsName, groupsProp);
-  ContentView.prototype[removeFun] = removeRotorItem;
-  ContentView.prototype[insertFun] = insertRotorItem;
-  ContentView.prototype[addFun] = addRotorGroup;
-
-  /**
-   * @override
-   * Override the "onLoaded" function of LayoutBase to create the custom rotor actions
-   */
-  function prototypeAsRotorContainer(cls: Class): void {
+    // override the `onLoaded` function of each prototype
     const _onLoaded = cls.prototype.onLoaded;
     Object.defineProperty(cls.prototype, 'onLoaded', {
       value: function onLoaded(): void {
@@ -161,7 +185,8 @@ export function initializeCustomRotors(): void {
         });
       },
     });
-  }
+  };
+
   prototypeAsRotorContainer(ContentView);
   prototypeAsRotorContainer(LayoutBase);
 }
