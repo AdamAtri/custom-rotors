@@ -11,6 +11,11 @@
 .group3 {
   background-color: teal;
 }
+.btn:selected {
+  background-color: aqua;
+  color: black;
+  font-weight: bold;
+}
 
 .rating-item {
   width: 20%;
