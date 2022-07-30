@@ -1,7 +1,7 @@
 {
   "name": "@nativescript/custom-rotors",
   "version": "0.0.1",
-  "description": "Add a plugin description",
+  "description": "Plugin to take advantage of iOS Accessibility Custom Rotors",
   "main": "index",
   "typings": "index.d.ts",
   "nativescript": {
@@ -19,11 +19,14 @@
     "JavaScript",
     "TypeScript",
     "iOS",
-    "Android"
+    "Android",
+    "Accessibility",
+    "A11y",
+    "Custom Rotors"
   ],
   "author": {
-    "name": "NativeScript",
-    "email": "oss@nativescript.org"
+    "name": "AdamAtri",
+    "email": "k.adam.atri@gmail.com"
   },
   "bugs": {
     "url": "https://github.com/NativeScript/plugins/issues"
