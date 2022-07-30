@@ -1,4 +1,4 @@
-import { Page, NavigatedData, GridLayout, View, ContentView, LayoutBase } from '@nativescript/core';
+import { Page, NavigatedData, GridLayout, View, ContentView, LayoutBase, isIOS } from '@nativescript/core';
 
 export function navigatingTo(d: NavigatedData): void {
   const page = d.object as Page;
@@ -10,6 +10,11 @@ export function navigatingTo(d: NavigatedData): void {
     console.log('rating rotorgroup callback ', forward, 'hmm');
     incrementOrDecrementRating(d.object as any, forward);
   });
+}
+
+export function loaded(): void {
+  if (!isIOS) alert('Custom Rotors only work on iOS');
+  else if (!UIAccessibilityIsVoiceOverRunning()) alert('Custom Rotors only work when VoiceOver is running');
 }
 
 let rating = 0;

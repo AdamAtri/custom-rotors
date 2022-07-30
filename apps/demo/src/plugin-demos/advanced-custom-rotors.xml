@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page" rotorContainer="true">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" loaded="loaded" class="page" rotorContainer="true">
     <Page.actionBar>
         <ActionBar title="advanced-custom-rotors" icon="" class="action-bar">
         </ActionBar>
