@@ -26,11 +26,11 @@ function clearSelected(view: View): boolean {
   if (view instanceof ContentView) clearSelected(view.content);
   else if (view instanceof LayoutBase) {
     view.eachChildView((v) => clearSelected(v));
-  } else view.deletePseudoClass('selected');
+  } else if (view) view.deletePseudoClass('selected');
   return true;
 }
 
 function highlightSelected(page: Page, { newView }): void {
   clearSelected(page);
-  (<View>newView).addPseudoClass('selected');
+  if (newView) (<View>newView).addPseudoClass('selected');
 }
