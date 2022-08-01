@@ -5,7 +5,7 @@ To run the demo application:
 ```
 then select vanilla ios
 
-[to go to the source code click here](https://github.com/AdamAtri/custom-rotors/tree/main/packages)  
+[to go to the source code click here](https://github.com/AdamAtri/custom-rotors/tree/main/packages/custom-rotors)  
 
   
   
