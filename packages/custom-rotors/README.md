@@ -1,11 +1,11 @@
-# @nativescript/custom-rotors
+# nativescript-custom-rotors
 
 ```javascript
-ns plugin add @nativescript/custom-rotors
+ns plugin add nativescript-custom-rotors
 ```
 
 # Nativescript Custom Rotors
-The `@nativescript/custom-rotors` adds easy to use properties to common {N} views to make them accessible to iOS Accessibility Custom Rotors. Accessibility Custom Rotor provide an elegant solution for screen-reader assisted navigation by associating views from various containers and geographies into a common a11y accessible group. Please see [this video from Apple WWDC2020](https://developer.apple.com/videos/play/wwdc2020/10116/) for more information on iOS Accessibility Custom Rotors  
+The `nativescript-custom-rotors` adds easy to use properties to common {N} views to make them accessible to iOS Accessibility Custom Rotors. Accessibility Custom Rotors provide an elegant solution for screen-reader assisted navigation by associating views from various containers and geographies into a common a11y accessible group. Please see [this video from Apple WWDC2020](https://developer.apple.com/videos/play/wwdc2020/10116/) for more information on iOS Accessibility Custom Rotors  
   
 NOTE: this plugin ONLY works on iOS. In android, the plugin functionality is ignored. 
 
@@ -68,7 +68,7 @@ initialize the custom-rotors plugin in
 `app.ts`:
 ```javascript
 ...
-import {initCustomRotors} from '@nativescript/custom-rotors'
+import {initCustomRotors} from 'nativescript-custom-rotors'
 initCustomRotors();
 ...
 Application.run(...);
