@@ -1,15 +1,18 @@
-**=== nativescript-custom-rotors
+# nativescript-custom-rotors
 To run the demo application:
 ```bash
 > npm start
 ```
 then select vanilla ios
 
-[to go to src click here](https://github.com/AdamAtri/custom-rotors/tree/main/packages)
+[to go to the source code click here](https://github.com/AdamAtri/custom-rotors/tree/main/packages)  
+
+  
+  
 
 
 
-ORIGINAL NATIVESCRIPT README:
+ORIGINAL NATIVESCRIPT README:  
 **=== IMPORTANT**
 
 # :rotating_light: Important - read first!
